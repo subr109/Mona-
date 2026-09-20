@@ -1,0 +1,6 @@
+{
+  "name": "MONA - 18+ AI Romantic Companion",
+  "description": "Meet Someone Who Understands You. A modern, responsive 18+ AI romantic companion platform featuring 100 Indian AI companions, multilingual chat, mood progression, virtual dates, photo generation, and couple diary.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

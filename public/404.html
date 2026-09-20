@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="refresh" content="0; url=./" />
+    <title>Redirecting...</title>
+    <script>
+      // Single Page App redirect for GitHub Pages
+      sessionStorage.redirect = location.href;
+      window.location.replace(
+        location.pathname.split('/').slice(0, 2).join('/') + '/'
+      );
+    </script>
+  </head>
+  <body style="background-color: #0b0813; color: #fff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0;">
+    <p>Redirecting to MONA AI...</p>
+  </body>
+</html>

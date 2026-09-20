@@ -1,0 +1,79 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to verify user authentication
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to verify if request is from the document owner
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Helper function to check if user has admin role
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.role == 'admin' || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if (isOwner(userId) && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']))) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // AI Characters (100 companions) - Publicly readable by authenticated adult users, writable only by admin
+    match /aiCharacters/{characterId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Conversations
+    match /conversations/{conversationId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid) || isAdmin();
+      
+      // Nested messages
+      match /messages/{messageId} {
+        allow read, write: if isAuthenticated() && 
+          (get(/databases/$(database)/documents/conversations/$(conversationId)).data.userId == request.auth.uid) || isAdmin();
+      }
+    }
+
+    // Memories
+    match /memories/{memoryId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid) || isAdmin();
+    }
+
+    // Generated Images
+    match /generatedImages/{imageId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid) || isAdmin();
+    }
+
+    // Favorites
+    match /favorites/{favoriteId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid) || isAdmin();
+    }
+
+    // Diary Entries
+    match /diaryEntries/{entryId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid) || isAdmin();
+    }
+
+    // Reports - Users can create reports, admins can view and process them
+    match /reports/{reportId} {
+      allow create: if isAuthenticated() && request.resource.data.reporterId == request.auth.uid;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Audit Logs - Only admins can read, created by server/admin
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+  }
+}
